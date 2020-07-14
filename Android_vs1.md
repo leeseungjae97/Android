@@ -56,7 +56,7 @@ System의 log는 logcat이라는 곳에 모여 찍히기 때문에 따로 log를
 ```java
 System.out.println("HelloWorld : MainActivity-onCreate()");
 ```
-![](pic/logcat.png)
+![](pic/logcat.png)<br/>
 System.out을 검색을 통해 찾은 모습..
 
 ```java
@@ -77,14 +77,14 @@ textView와 Button등을 붙일 때 쓰는 화면 - Layout
 
 ![](pic/layout.png)
 
-![](pic/Liner.png)
+![](pic/Liner.png)<br/>
 
 orientation = view의 결착방식 설정
 ```xml
 android:orientation="vertical"
 ```
 
-![](pic/verticalresult.png)
+![](pic/verticalresult.png)<br/>
 Hello World! 밑으로 내려온 goodbye
 ```xml
 <TextView
@@ -108,7 +108,7 @@ Hello World! 밑으로 내려온 goodbye
 ```xml
  android:orientation="horizontal"
 ```
-![](pic/horizental.png)
+![](pic/horizental.png)<br/>
 수평으로 나열하여서 goodbye가 layout 밖으로 나간모습.
 
 ```java
@@ -119,7 +119,7 @@ TextView textview = findViewById(R.id.byeTextView);
 
 ---
 ## Button
-![](pic/button.png)
+![](pic/button.png)<br/>
 Button은 textView를 부모로 가지고 있다.
 
 ```xml
@@ -157,7 +157,7 @@ class MyOnClickListener implements View.OnClickListener {
     }
 }
 ```
-![](pic/clickEventListener.png)
+![](pic/clickEventListener.png)<br/>
 하지만 이러한 방법은 button마다 listener를 만들어 주어야한다.
 
 다른방법
@@ -242,9 +242,9 @@ clickButton.setOnClickListener(view -> Log.d(TAG, "Button is clicked!"));
 ```
 ---
 ## Gradle
-![](pic/gradle.png)
+![](pic/gradle.png)<br/>
 build.gradle(Module: app) 추가
-![](pic/gradle_option.png)
+![](pic/gradle_option.png)<br/>
 해당코드 추가.
 
 ---
@@ -327,7 +327,7 @@ public void onClickButton(View view){
         });
     }
 ```
-![](pic/touchEvent.png)
+![](pic/touchEvent.png)<br/>
 touch의 경우 clickButtonDown과 clickButtonUp을 동시에 인식하기 때문에 두번 찍힌다.
 
 ```java
@@ -399,9 +399,9 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
-![](pic/uicheckbox.png)
+![](pic/uicheckbox.png)<br/>
 분기문으로 checkbox가 check되어있는지 unchecked 되어있는지 확인한후 
-출력해주는 값을 다르게 해주었다.
+출력해주는 값을 다르게 해주었다.<br/>
 ![](pic/checBox+button.png)
 
 ---
@@ -456,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
-![](pic/radiobuttonevent.png)
+![](pic/radiobuttonevent.png)<br/>
 이러한 경우 남자의 radiobutton을 설정해두면 남자를 설정하고 또다시 남자를 클릭하면 계속해서 해당 radio의 정보를 읽어온다.
 
 이러한 경우 radiogroup으로 event를 걸어주어야한다.

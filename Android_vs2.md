@@ -114,7 +114,7 @@
 
 ---
 ## CustomView
-사용자 customView를 사용하려면 `View` 를 상속받아야한다.
+사용자 customView를 사용하려면 `View` 를 상속받아야한다.<br/>
 ![](../ViewClass.png)
 
 ```java
@@ -321,7 +321,6 @@ public boolean onTouchEvent(MotionEvent event) {
 `ListView`, `container`, `Adaptor` 가 필요하다.
 ![](../ListView_ListItem.png)
 
----
 
 list 생성
 ```java
@@ -360,7 +359,7 @@ listView.setAdapter(adapter);
 `android:layout_height="0dp"` 
 `android:layout_weight="1"`
 
-EditText를 침범하지않게 ListView의 height설정
+`EditText`를 침범하지않게 `ListView`의 `height`설정<br/>
 ![](../layout_weight.png)
 
 `textWatcher`는 특정키에 대한 이벤트 보다는 입력되는 문자열에 대한 변화에 대해서 인식할 때 사용에 용이하기 때문에 특정키에 대한 이벤트 설정은 `textWatcher`보다는 `Listener`를 이용한다
@@ -405,6 +404,169 @@ mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             }
         });
 ```
-해당하는 position의 item을 remove하고 ListView 갱신
+해당하는 `position`의 item을 `remove`하고 `ListView` 갱신
 
 ---
+
+- `image`를 `Listitem` 으로 가져오기
+```java
+public class WeatherAdapter extends BaseAdapter {
+    private Context mContext;
+    private ArrayList<WeatherInfo> mDataSet;
+    private LayoutInflater mInflater;//XML을 파싱하는 객체
+    
+    //이미지를 읽어오기 위한 객체
+    private Resources mResources;
+    
+    public WeatherAdapter(Context context, ArrayList<WeatherInfo> dataSet) {
+        this.mContext = context;
+        this.mDataSet = dataSet;
+        this.mInflater = LayoutInflater.from(mContext);
+        //SingleTon pattern
+        
+        //Resource를 관리하는 Resource를 가져와야한다.
+        this.mResources = mContext.getResources();
+    }
+```
+---
+
+![](pic/WeatherFactory.png)
+```java
+public View getView(int position, View view, ViewGroup viewGroup) {
+        View itemView = mLayoutInflater.inflate(R.layout.list_item, viewGroup, false);
+        //listitem의 부모가 누구인지 참조를 한다.
+        //listview는 rootView가 아니라 listitem으로 붙은 것 이기때문에 attachToRoot가 아니다.
+
+        ImageView weatherImageView =itemView.findViewById(R.id.weather_icon_imageView);
+        TextView countryNameTextView = itemView.findViewById(R.id.country_name_textView);
+
+        WeatherInfo weatherInfo = mDataSet.get(position);
+
+        //파일명으로부터 리소스 아이디를 얻어온다.
+        //image를 project에 복사 - drawable에 복사.
+
+        //drawable에 있는 image들은 특정한 identifier로 저장
+        int resId = mResources.getIdentifier("@drawable/" + weatherInfo.iconName,
+                "drawable", mContext.getPackageName());
+
+        //파일 포맷은 png나 jpg로 되어있지만
+        //화면에 출력하는 image들은 bitmap으로 뿌려진다.
+        //ResourcesId 로 부터 bitmap을 가져와야한다
+
+        //resId 로 png를 읽어와서 bitmap으로 바꿔줌
+        Bitmap bitmap = BitmapFactory.decodeResource(mResources, resId);
+
+        //image의 값을 bitmap으로 파싱된 image로 설정해줌
+        weatherImageView.setImageBitmap(bitmap);
+        countryNameTextView.setText(weatherInfo.countryName);
+        return itemView;
+
+
+    }
+```
+---
+
+Adapter 연결
+```java
+ private ArrayList<WeatherInfo> mWeatherInfo = new ArrayList<>();
+    private ListView mListView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mListView = findViewById(R.id.weather_listView)
+
+        mWeatherInfo.add(new WeatherInfo("Korea", 22));
+        mWeatherInfo.add(new WeatherInfo("America", 20));
+        mWeatherInfo.add(new WeatherInfo("EngLand", 3));
+        mWeatherInfo.add(new WeatherInfo("Mexico", 100));
+        mWeatherInfo.add(new WeatherInfo("Canada", 1));
+        mWeatherInfo.add(new WeatherInfo("China", 33));
+
+        mListView.setAdapter(new WeatherAdapter(this, mWeatherInfo));
+    }
+```
+![](pic/WeatherList.png)
+
+```java
+ public View getView(int position, View view, ViewGroup viewGroup) {
+        //데이터가 수십만개가 되게되면 itemView를 계속 생성하기 때문에 버벅인다
+        //view하나로 view처리를 하게된다면 보다 자원을 덜 사용한다.
+        if( view == null) {
+            view = mLayoutInflater.inflate(R.layout.list_item, viewGroup, false);
+        }
+
+
+        ...
+        return view;
+```
+
+---
+
+### ViewHolder Pattern(View Tag)
+
+이전의 `view`는 `findViewById`로 읽어왔었다.
+이러한 과정은 부하가 상당했기 때문에 `holder`의 `caching`을 통하여
+해당하는 `view`들을 받아 놓고 쓴다.
+```java
+ViewHolder holder;
+        if( view == null) { // 기존의 view가 없다면
+        //view 초기화 후 값 지정
+            view = mLayoutInflater.inflate(R.layout.list_item, viewGroup, false);
+            holder = new ViewHolder();
+            holder.imageView = view.findViewById(R.id.weather_icon_imageView);
+            holder.textView = view.findViewById(R.id.country_name_textView);
+            view.setTag(holder); // 뷰에 관련한 데이터를 저장하는 공간
+        } 
+         else { //기존의 view가 있다면 getTag를 통해 viewHolder의 값을 가져온다.
+            holder = (ViewHolder)view.getTag();
+        }
+
+        ...
+
+        WeatherInfo weatherInfo = mDataSet.get(position);
+
+        ...
+
+        holder.imageView.setImageBitmap(bitmap);
+        holder.textView.setText(weatherInfo.countryName);
+
+        ...
+
+    private static class ViewHolder { 
+        ImageView imageView;
+        TextView textView;
+    }
+```
+`holder`내부에 `imageView`와 `textView`를 저장해놓고 쓴다.
+
+---
+## Toast message
+![](pic/ToastMessage.png)
+
+```xml
+<EditText
+    android:id="@+id/editText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textSize="50sp"/>
+
+<Button
+    android:id="@+id/button"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="toast"
+    android:onClick="onButtonClick"
+    android:textSize="50sp"/>
+```
+```java
+public void onButtonClick(View view) {
+    EditText edit = findViewById(R.id.editText);
+    String msg = edit.getText().toString();
+
+    Toast toast =Toast.makeText(this, msg, Toast.LENGTH_LONG);
+    toast.show();
+}
+```
+![](pic/ToastMessageTest.png)

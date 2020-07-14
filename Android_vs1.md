@@ -15,8 +15,6 @@ MVC2 pattern 의 View와 Controller를 android studio에서 다룰 수 있다.
 View(XML) Contrller(Activity)
 
 ---
-
----
 Shift + f10 을 통한 디버깅
 
 onCreate 가장먼저 호출

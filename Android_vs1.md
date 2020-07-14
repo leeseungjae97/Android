@@ -58,7 +58,7 @@ System의 log는 logcat이라는 곳에 모여 찍히기 때문에 따로 log를
 ```java
 System.out.println("HelloWorld : MainActivity-onCreate()");
 ```
-![](/logcat.png)
+![](pic/logcat.png)
 System.out을 검색을 통해 찾은 모습..
 
 ```java
@@ -70,23 +70,23 @@ Log.v(TAG, "onCreate()");
 Log.w(TAG, "onCreate()");
 Log.e(TAG, "onCreate()");
 ```
-![](/LogKind.png)
+![](pic/LogKind.png)
 
 ---
 
 ## Layout
 textView와 Button등을 붙일 때 쓰는 화면 - Layout
 
-![](/layout.png)
+![](pic/layout.png)
 
-![](/Liner.png)
+![](pic/Liner.png)
 
 orientation = view의 결착방식 설정
 ```xml
 android:orientation="vertical"
 ```
 
-![](/verticalresult.png)
+![](pic/verticalresult.png)
 Hello World! 밑으로 내려온 goodbye
 ```xml
 <TextView
@@ -105,23 +105,23 @@ Hello World! 밑으로 내려온 goodbye
         android:textSize="30sp"
         android:textStyle="bold"/>
 ```
-![](/matchParent.png)
+![](pic/matchParent.png)
 
 ```xml
  android:orientation="horizontal"
 ```
-![](/horizental.png)
+![](pic/horizental.png)
 수평으로 나열하여서 goodbye가 layout 밖으로 나간모습.
 
 ```java
 TextView textview = findViewById(R.id.byeTextView);
         textview.setText("hellow, world");
 ```
-![](/textidView.png)
+![](pic/textidView.png)
 
 ---
 ## Button
-![](/button.png)
+![](pic/button.png)
 Button은 textView를 부모로 가지고 있다.
 
 ```xml
@@ -136,7 +136,7 @@ Button은 textView를 부모로 가지고 있다.
         android:text="OK"
         android:textSize= "50sp"/>
 ```
-![](/buttonresult.png)
+![](pic/buttonresult.png)
 
 ```xml
 <Button android:id="@+id/clickButton"
@@ -159,7 +159,7 @@ class MyOnClickListener implements View.OnClickListener {
     }
 }
 ```
-![](/clickEventListener.png)
+![](pic/clickEventListener.png)
 하지만 이러한 방법은 button마다 listener를 만들어 주어야한다.
 
 다른방법
@@ -244,9 +244,9 @@ clickButton.setOnClickListener(view -> Log.d(TAG, "Button is clicked!"));
 ```
 ---
 ## Gradle
-![](/gradle.png)
+![](pic/gradle.png)
 build.gradle(Module: app) 추가
-![](/gradle_option.png)
+![](pic/gradle_option.png)
 해당코드 추가.
 
 ---
@@ -329,7 +329,7 @@ public void onClickButton(View view){
         });
     }
 ```
-![](/touchEvent.png)
+![](pic/touchEvent.png)
 touch의 경우 clickButtonDown과 clickButtonUp을 동시에 인식하기 때문에 두번 찍힌다.
 
 ```java
@@ -360,7 +360,7 @@ protected void onCreate(Bundle savedInstanceState) {
         });
     }
 ```
-![](/motionevent.png)
+![](pic/motionevent.png)
 
 chatty 발생 : MOVE는 픽셀상으로 이동하기 때문에 chatty가 발생하는것이 맞다
 
@@ -376,7 +376,7 @@ chatty 발생 : MOVE는 픽셀상으로 이동하기 때문에 chatty가 발생�
         android:text="구독"/>
 ```
 
-![](/checkBox.png)
+![](pic/checkBox.png)
 
 ---
 ```java
@@ -401,10 +401,10 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
-![](/uicheckbox.png)
+![](pic/uicheckbox.png)
 분기문으로 checkbox가 check되어있는지 unchecked 되어있는지 확인한후 
 출력해주는 값을 다르게 해주었다.
-![](/checBox+button.png)
+![](pic/checBox+button.png)
 
 ---
 ```xml
@@ -458,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
-![](/radiobuttonevent.png)
+![](pic/radiobuttonevent.png)
 이러한 경우 남자의 radiobutton을 설정해두면 남자를 설정하고 또다시 남자를 클릭하면 계속해서 해당 radio의 정보를 읽어온다.
 
 이러한 경우 radiogroup으로 event를 걸어주어야한다.
@@ -480,7 +480,7 @@ RadioGroup group = findViewById(R.id.radioGroup);
             }
         });
 ```
-![](/radiogroupevent.png)
+![](pic/radiogroupevent.png)
 
 ---
 

@@ -110,12 +110,12 @@
         android:textStyle="bold"
         android:maxLength="10"/>
 ```
-![](../2020-07-14-10-59-19.png)
+![](pic/2020-07-14-10-59-19.png)
 
 ---
 ## CustomView
-사용자 customView를 사용하려면 `View` 를 상속받아야한다.<br/>
-![](../ViewClass.png)
+사용자 customView를 사용하려면 `View` 를 상속해야한다.<br/>
+![](pic/ViewClass.png)
 
 ```java
 //customView 는 반드시 View를 상속하여야한다.
@@ -131,9 +131,25 @@ public class MyView extends View {
 ```
 ---
 ### context
-![](../context.png)
 
+![](pic/context.png)<br/>
+`Log.i(TAG, this.toString());`로 찍어본 MainActivity의 context
+![](pic/MainActivity_context.png)<br/>
+
+`context`는 시스템의 핸들과도 같다. 시스템의 리소스, 데이터베이스, preferences 등에 대한 접근을 제공한다.
+
+Android의 `Activity`는 현재 실행중인 환경에 대한 핸들이다. `Activity 객체`는 `context객체` 를 상속받고 그로 인해 `Activity`는 `Application의 특정 Resource`와 `class`, `app preference`에 대한 정보를 접근할 수 있게 된다.
+
+
+context : 시스템에 대한 핸들
+Activity : 현재 실행중인 환경에 대한 핸들
+
+context의 남용이나 잘못된 사용은 메모리 누수를 일으킨다.
+<br/>
+
+---
 생성된 `View`객체를 `MainActivity`에 전달하여 사용한 모습
+`MyView -`
 ```java
 public MyView(Context context) {
         //부모클래스에 반드시 컨텍스트 객체를 전달해야 한다
@@ -154,6 +170,7 @@ public MyView(Context context) {
         canvas.drawRect(100,100,500,500, mPaint);
     }
 ```
+`MainActivity -`
 ```java
 protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,7 +200,7 @@ CustomView의 위치를 그대로 가져와서 사용.
         android:layout_height="wrap_content"
         android:text="Hello World!" />
 ```
-![](../rect.png)
+![](pic/rect.png)
 
 ---
 
@@ -216,7 +233,7 @@ CustomView의 위치를 그대로 가져와서 사용.
 
 ### Canvas가 제공하는 그리기 기능
 ![](Canvas_struct.png)
-![](../canvas.png)
+![](pic/canvas.png)
 
 ---
 `private Paint mPaint;` : `Paint`로 만들어진 변수
@@ -265,7 +282,7 @@ public boolean onTouchEvent(MotionEvent event) {
         return super.onTouchEvent(event);
     }
 ```
-![](../onTouchEvent.png)
+![](pic/onTouchEvent.png)
 
 부동소수점 까지 다 찍히지만 세세한 정보값 까지 받을 필요도없고
 받아서 하게되면 코드가 복잡해진다.
@@ -307,19 +324,19 @@ public boolean onTouchEvent(MotionEvent event) {
     return super.onTouchEvent(event);
 }
 ```
-![](../drawLine.png)
+![](pic/drawLine.png)
 
 ---
 
 ### List View
-![](../ListView.png)
+![](pic/ListView.png)
 하나이상의 ItemView를 포함하는 `ViewList`
 
 `ListView`와 `Data`가 저장되어있는 `Linaer container` 사이를 연결해주는 `Adaptor`객체가 필요하다.
 
 `List View`를 쓰기 위해서는
 `ListView`, `container`, `Adaptor` 가 필요하다.
-![](../ListView_ListItem.png)
+![](pic/ListView_ListItem.png)
 
 
 list 생성
@@ -353,14 +370,29 @@ ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.list_item, name
 ListView listView = findViewById(R.id.name_listView);
 listView.setAdapter(adapter);
 ``` 
-![](../ListViewInAndroid.png)
+![](pic/ListViewInAndroid.png)
 
 ---
-`android:layout_height="0dp"` 
-`android:layout_weight="1"`
 
+|단위|단위표현|설명|
+|:-:|:-:|-|
+|px|픽셀|화면픽셀 수|
+|dp 또는 dip|밀도 독립적 픽셀|160dpi 화면을 기준으로 한 픽셀 <br/>1인치당 160개의 픽셀이 있는 화면의 1dp는 1px과 같다|
+|sp 또는 sip|축척 독립적 픽셀|텍스트 크기를 지정할 때 사용하는 단위<br/> dp와 유사하나 글꼴의 크기에 따라 1sp 당의 픽셀 수가 달라진다|
+|in|인치|1인치 물리적길이|
+|mm|밀리미터|1밀리미터 물리적길이|
+|em|텍스트 크기|글꼴과 상관없이 동일한 텍스트 크기 표시|
+
+`android:layout_weight="1"`
+layout의 무게중심. 
+`weight=1`,`weight=1`,`weight=2`의 layout이 있다면 1:1:2의 비율로 설정된다.<br/>
+>2:1:1 비율의 layout이 설정된 모습
+![](pic/layoutWeight.png)
+
+
+`android:layout_height="0dp"`
 `EditText`를 침범하지않게 `ListView`의 `height`설정<br/>
-![](../layout_weight.png)
+![](pic/layout_weight.png)
 
 `textWatcher`는 특정키에 대한 이벤트 보다는 입력되는 문자열에 대한 변화에 대해서 인식할 때 사용에 용이하기 때문에 특정키에 대한 이벤트 설정은 `textWatcher`보다는 `Listener`를 이용한다
 ```java
@@ -388,7 +420,7 @@ mTodoEditText.setOnKeyListener(new View.OnKeyListener() {
             }
         });
 ```
-![](../TodoListAddByTextView.png)
+![](pic/TodoListAddByTextView.png)
 
 ---
 ```java
@@ -396,14 +428,19 @@ mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             //mListView에 대해서 LongClick동안의 touch가 있었을 때 실행되는 event 설정.
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                                        //AdapterView = mListView,
-                                        //View =
+                                        
                 mTodoDataSet.remove(position);
                 mListAdaptor.notifyDataSetChanged();
                 return true;
             }
         });
 ```
+`AdapterView -`
+
+    AdapterView는 어댑터에 로드된 항목을 표시하는 ViewGroup입니다.
+    가장 일반적인 어댑터 유형은 배열 기반 데이터 소스에서 가져옵니다.
+
+![](pic/Adapter.png)
 해당하는 `position`의 item을 `remove`하고 `ListView` 갱신
 
 ---
@@ -428,6 +465,17 @@ public class WeatherAdapter extends BaseAdapter {
         this.mResources = mContext.getResources();
     }
 ```
+`LayoutInflater -`
+
+    View를 만드는 가장 기본적인방법
+    Fragment의 View를 만들거나 RecyclerView에서 ViewHolder를 만들때
+    CustomView에서 xml로 정의된 View를 merge할 때 등 여러곳에서 사용한다.
+
+    XML 레이아웃의 내용이 메모리에 객체화되는 과정을 인플레이션`Inflation`이라고한다.
+    setContentView() 메서드가 존재하지만 해당 메서드는 `MainActivity`만의 레이아웃을 
+    설정하는 역할만 한다. 따라서 `MainActivity`외의 부분 레이아웃을 메모리에 객체화
+    할때는 인플레이터를 사용해야한다. 이를 위해 안드로이드는 LayoutInflater를 제공.
+
 ---
 
 ![](pic/WeatherFactory.png)

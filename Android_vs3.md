@@ -583,8 +583,66 @@ Android System에 따라 해당 App을 정지시키려고한다.
 `MainThread`가 `View(UIThread)`를 Update하고
 `WorkerThread`도 `View(UIThread)`를 Update하기 때문에
 
-await가 일어난다
+Thread 가 일어난다
 
 `WorkerThread`가 `View`를 update를 하는것이 아닌 `WorkerThread`에서는 UIupdate하는 코드를 넣어주어야한다
 
 Android는 이를 위해서 해당의 `Handler`를 제공한다.
+
+---
+## Handler
+Thread와 Thread간의 통신
+```java
+ Handler mHandler = new Handler(Looper.getMainLooper()/*MainThread의 Loop*/) {
+    //메세지 큐에 전달된 메세지를 처리하기 위한 핸들러 메서드
+    @Override
+    public void handleMessage(@NonNull Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what) {
+            case UPDATE_PROGRESSBAR:
+                int percent = msg.arg1;
+                mProgressBar.setProgress(percent);
+                mButton.setText(percent + "%");
+                break;
+        }
+    }
+};
+```
+```java
+ mThread = new Thread(new Runnable() {
+    @Override
+    public void run() {
+        mProgressBar.setProgress(0);
+        for (int i = 0; i <= 100; i++) {
+            try { Thread.sleep(100); } catch (InterruptedException e) { e.printStackTrace(); }
+            //다운로드 코드
+
+            //UI를 업데이트하기 위한 메세지를 생성
+            //Message를 직접 new를 하는게 아니라 pool상태로 만들어진 message instance를 사용자에게 준다.
+            Message message = Message.obtain();
+            message.what = UPDATE_PROGRESSBAR;
+                            //message의 고유값을 의미한다.
+                            //해당 message의 고유값을 integer로 받아본다.
+
+            message.arg1 = i;
+            mHandler.sendMessage(message);
+
+            //mButton.setText(i + "%");
+            //mProgressBar.setProgress(i);
+        }
+        mThread= null;
+    }
+});
+mThread.start();
+```
+MainThread에는 Message를 읽는 Looper와 Message Queue가 있기 때문에
+위의 WorkerThread는 MainThread에 Message를 보낼 수 있다.
+
+그러나 UI Thread에서 WorkerThread에는 
+Looper와 Msg Que가 없기 때문에 Message를 보낼 수 없다.
+
+---
+## Looper
+
+![](pic/Handler&Looper.png)
+    

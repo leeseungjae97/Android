@@ -11,8 +11,6 @@
 >출처 https://developer.android.com/reference/com/google/android/material/snackbar/Snackbar
 
 
-`Gradle`
-
 ![](pic/Mertial.png)
 ![](pic/MaterialDownload.png)
 
@@ -32,8 +30,9 @@ dependencies {
 ```
 `Toast`는 `View`와 상관없이 제일 상위에 뜨기 때문에 `context`만 있으면 되지만
 `Snackbar`는 `rootView`가 필요하다.
+
 `LinearLayout`에 대한 `onButtonClick`의 `View`
-` - Snackbar.make(view, "hello World", Snackbar.LENGTH_LONG).show()`
+` - Snackbar.make(view, "hello World", Snackbar.LENGTH_LONG).show();`
 
 `LinearLayout`에 직접적으로 넣은 코드
 ` - Snackbar.make(layout, "hello World", Snackbar.LENGTH_LONG).show();`
@@ -55,16 +54,16 @@ public void onButtonClick(View view){
 ![](pic/SnackbarPopup.png)
 
 `Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFINITE).show();`
-Snackbar.LENGTH_INDEFINITE는 이벤트 처리를 위한 옵션이다
+`Snackbar.LENGTH_INDEFINITE`는 이벤트 처리를 위한 옵션이다
 ```java
 Snackbar snackbar = Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFINITE);
-                snackbar.setAction("OK", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Log.i(TAG, "Snackbar Test");
-                    }
-                });
-                snackbar.show();
+snackbar.setAction("OK", new View.OnClickListener() {
+    @Override
+    public void onClick(View view) {
+        Log.i(TAG, "Snackbar Test");
+    }
+});
+snackbar.show();
 ```
 >OK를 누르면 Snackbar가 내려간다.
 ![](pic/SnackBarOKbutton.png)
@@ -208,6 +207,7 @@ builder.setNeutralButton("취소", new DialogInterface.OnClickListener() {
 ---
 -주의!
 ![](pic/MustCreateAboutView.png)
+<br/> 미생성 시 오류
 
 ---
 
@@ -252,8 +252,8 @@ case R.id.alertDialog_button:
 ![](pic/ActivityChangeSeqence.png)<br/>
 어플 사용 중 다른 어플의 기능을 구동할 때 기존어플에서 새로이 어플을 실행했다.
 
-하지만 해당 어플의 `Activity`만 생성하여 실행한다면 어플이 따로 실행될 일이 없다.
-
+하지만 해당 어플의 `Activity`만 가져와 실행한다면 어플이 따로 실행될 일이 없다.
+아래 코드는 `Activity`를 따로 생성하여 `MainActivity` 위에서 실행되게 하였다.
 `Second Activity Create -`
 ![](pic/NewActivity.png)
 ```xml
@@ -278,15 +278,15 @@ public void onButtonClick(View view){
     startActivity(intent);
 }
 ```
-
-- Intent
+---
+## Intent
 ![](pic/IntentInfo.png)
 ![](pic/IntentWithActInfo.png)
 
 ![](pic/MainActResult.png)
 ![](pic/OnSecondActResult.png)
 
-`intent`는 내부 `Extra`의 `Hashmap`에 데이터를 저장한다.
+`intent`는 내부 `Hashmap`구조의 `Extra`에 데이터를 저장한다.
 `intent`를 통한 `ActivityResult` 받기
 
 
@@ -307,6 +307,8 @@ public void onButtonClick(View view){
     }
 }
 ```
+<br/>
+
 `onSecondActivity -`
 ```java
 protected void onCreate(Bundle savedInstanceState) {
@@ -435,7 +437,7 @@ android 시스템의 리소스가 부족할 때 해당 상태의 `activity`가 �
 ```
 ![](pic/CloseActivityOnAndroid.png)
 
-drawLine의 View 생성
+기능을 수행하는 View 생성
 ```java
 class MyView extends View {
         Paint mPaint = new Paint();
@@ -485,6 +487,9 @@ class MyView extends View {
         }
     }
 ```
+시스템에서 Rotate를 켜주고 화면모드를 전환하면 내부 내용이 초기화된다.
+
+
 ---
 ## InstanceState
 Screen Rotation 시 View를 Stop하고 Destory를 하기 때문에
@@ -497,7 +502,9 @@ Bundle을 이용하여 상태정보를 저장<br/>
 ArrayList<Point> mPoints = new ArrayList<>();
 ```
 
+
 ```java
+//저장
 @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         Log.i(TAG, "onSaveInstanceState");
@@ -505,16 +512,145 @@ ArrayList<Point> mPoints = new ArrayList<>();
         super.onSaveInstanceState(outState);
     }
 
-    //복원
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        //해당 argument는 절대 null이 될 수 없다.
-        ArrayList<Point> points = (ArrayList<Point>) savedInstanceState.getSerializable("mPoints");
-        mPoints = points;
-        super.onRestoreInstanceState(savedInstanceState);
-    }
+//복원
+@Override
+protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+    //해당 argument는 절대 null이 될 수 없다.
+    ArrayList<Point> points = (ArrayList<Point>) savedInstanceState.getSerializable("mPoints");
+    mPoints = points;
+    super.onRestoreInstanceState(savedInstanceState);
+}
 ```
 세로모드에서 가로모드로 전환해도 세로모드의 onDraw정보를 다시 불러오는 모습
 ![](pic/SaveViewWhenRotate.png)
 ![](pic/WhenRotateActivityCycle.png)
-branch
+
+---
+# Progress Bar
+```xml
+<ProgressBar
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+<!--수평바-->
+<ProgressBar
+    style="?android:attr/progressBarStyleHorizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:max="100"
+    android:progress="25"/>
+```
+![](pic/ProgressBar.png)
+
+ANR발생코드
+```java
+ public void onButtonClick(View view){
+//        progressiveValue +=20;
+//        mProgressBar.setProgress(progressiveValue);
+    mProgressBar.setProgress(0);
+    for(int i =0 ; i <= 100; i++) {
+        try { Thread.sleep(100); } catch (Exception e) { e.printStackTrace(); }
+        mButton.setText(i + "%");
+        mProgressBar.setProgress(i);
+    }
+}
+```
+`MainThread`가 5초내지 10초정도가 걸리는 작업을 수행하게되면 다른 메서드를 실행할 수 없기 때문에
+`Android System`에서 `ANR`을 띄운다.
+
+`WorkerThread`에 해당 연산을 돌려 `Main`따로 `WorkerThread` 따로 실행된다.
+```java
+public void onButtonClick(View view) {
+    if (mThread != null) { //다운로드중
+        return;
+    }
+
+    mThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            mProgressBar.setProgress(0);
+            for (int i = 0; i <= 100; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mButton.setText(i + "%");
+                mProgressBar.setProgress(i);
+            }
+            mThread= null;
+        }
+    });
+    mThread.start();
+}
+```
+해당코드는 Sleep의 시간이 짧기 때문에 상관없이 되지만 대기시간이 길어지면
+Android System에 따라 해당 App을 정지시키려고한다.
+`MainThread`가 `View(UIThread)`를 Update하고
+`WorkerThread`도 `View(UIThread)`를 Update하기 때문에
+![](pic/ThreadCrash.png)
+
+`ThreadSyncError` 가 일어난다
+
+`WorkerThread`가 `View`를 update를 하는것이 아닌 `WorkerThread`에서는 UIupdate하는 코드를 넣어주어야한다
+
+Android는 이를 위해서 해당의 `Handler`를 제공한다.
+
+---
+## Handler
+![](pic/GiveHandler.png)
+Thread와 Thread간의 통신
+```java
+ Handler mHandler = new Handler(Looper.getMainLooper()/*MainThread의 Loop*/) {
+    //메세지 큐에 전달된 메세지를 처리하기 위한 핸들러 메서드
+    @Override
+    public void handleMessage(@NonNull Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what) {
+            case UPDATE_PROGRESSBAR:
+                int percent = msg.arg1;
+                mProgressBar.setProgress(percent);
+                mButton.setText(percent + "%");
+                break;
+        }
+    }
+};
+```
+```java
+ mThread = new Thread(new Runnable() {
+    @Override
+    public void run() {
+        mProgressBar.setProgress(0);
+        for (int i = 0; i <= 100; i++) {
+            try { Thread.sleep(100); } catch (InterruptedException e) { e.printStackTrace(); }
+            //다운로드 코드
+
+            //UI를 업데이트하기 위한 메세지를 생성
+            //Message를 직접 new를 하는게 아니라 pool상태로 만들어진 message instance를 사용자에게 준다.
+            Message message = Message.obtain();
+            message.what = UPDATE_PROGRESSBAR;
+                            //message의 고유값을 의미한다.
+                            //해당 message의 고유값을 integer로 받아본다.
+
+            message.arg1 = i;
+            mHandler.sendMessage(message);
+
+            //mButton.setText(i + "%");
+            //mProgressBar.setProgress(i);
+        }
+        mThread= null;
+    }
+});
+mThread.start();
+```
+MainThread에는 Message를 읽는 Looper와 Message Queue가 있기 때문에
+위의 WorkerThread는 MainThread에 Message를 보낼 수 있다.
+
+그러나 UI Thread에서 WorkerThread에는 
+Looper와 Msg Que가 없기 때문에 Message를 보낼 수 없다.
+
+---
+## Looper
+
+![](pic/Handler&Looper.png)

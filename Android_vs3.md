@@ -517,4 +517,74 @@ ArrayList<Point> mPoints = new ArrayList<>();
 세로모드에서 가로모드로 전환해도 세로모드의 onDraw정보를 다시 불러오는 모습
 ![](pic/SaveViewWhenRotate.png)
 ![](pic/WhenRotateActivityCycle.png)
-branch
+
+---
+# Progress Bar
+```xml
+<ProgressBar
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+<!--수평바-->
+<ProgressBar
+    style="?android:attr/progressBarStyleHorizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:max="100"
+    android:progress="25"/>
+```
+![](pic/ProgressBar.png)
+
+ANR발생코드
+```java
+ public void onButtonClick(View view){
+//        progressiveValue +=20;
+//        mProgressBar.setProgress(progressiveValue);
+    mProgressBar.setProgress(0);
+    for(int i =0 ; i <= 100; i++) {
+        try { Thread.sleep(100); } catch (Exception e) { e.printStackTrace(); }
+        mButton.setText(i + "%");
+        mProgressBar.setProgress(i);
+    }
+}
+```
+`MainThread`가 5초내지 10초정도가 걸리는 작업을 수행하게되면 다른 메서드를 실행할 수 없기 때문에
+`Android System`에서 `ANR`을 띄운다.
+
+`WorkerThread`에 해당 연산을 돌려 `Main`따로 `WorkerThread` 따로 실행된다.
+```java
+public void onButtonClick(View view) {
+    if (mThread != null) { //다운로드중
+        return;
+    }
+
+    mThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            mProgressBar.setProgress(0);
+            for (int i = 0; i <= 100; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mButton.setText(i + "%");
+                mProgressBar.setProgress(i);
+            }
+            mThread= null;
+        }
+    });
+    mThread.start();
+}
+```
+해당코드는 Sleep의 시간이 짧기 때문에 상관없이 되지만 대기시간이 길어지면
+Android System에 따라 해당 App을 정지시키려고한다.
+`MainThread`가 `View(UIThread)`를 Update하고
+`WorkerThread`도 `View(UIThread)`를 Update하기 때문에
+
+await가 일어난다
+
+`WorkerThread`가 `View`를 update를 하는것이 아닌 `WorkerThread`에서는 UIupdate하는 코드를 넣어주어야한다
+
+Android는 이를 위해서 해당의 `Handler`를 제공한다.

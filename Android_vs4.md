@@ -282,3 +282,163 @@ public class TimerService extends Service {
 
 `context`를 상속받고 있는 `Service`
 `Service` 또한 app을 구성하고 있는 요소이기 때문에 `context`를 가지고있다.
+
+---
+## Started Service
+
+
+`Service` 위에서 Thread.sleep을 이용한 코드
+```java
+public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        Log.i(TAG, "onStartCommand()");
+        if(!isRunning) {
+            isRunning = true;
+
+            mSecond = 0;
+            isStop = false;
+            while (mSecond <= ONE_HOUR) {
+                if (isStop) break; //루프 진행여부 flag
+                Log.i(TAG, "mSecond" + mSecond);
+
+                ++mSecond;
+                if ((mSecond % 10) == 0)
+                    Toast.makeText(this, "Alarm: " + mSecond, Toast.LENGTH_SHORT).show();
+
+                try { Thread.sleep(1000); } catch (InterruptedException e) {  }
+            }
+            isRunning = false;
+        }
+        return START_STICKY; //메모리 부족으로 종료되었다가 가용 메모리가 확보되면
+                             //현재 서비스를 다시 기동하라는 플래그
+    };
+```
+![](pic/WaitForService20s.png)
+<br/>
+
+![](pic/ANR.png)
+멈춰버렸다.
+
+
+`Service`에서 `Thread`의 진행이 20초 이상 지연된다면 `ANR`이 뜨면서 `App`의 수행여부를 물어본다.
+
+`UI Thread`를 멈춰두었기때문에 `UI update`가 이루어 지지않는다.
+`Service`가 `UI Thread`에서 진행되는 `Component`이기 떄문이다.
+
+그러므로 `Service`를 이용한 `Thread` 이용 함수 출력은 `WorkerThread`를 통해서 해야한다.
+
+```java
+ public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        Log.i(TAG, "onStartCommand()");
+
+
+        if(mTimerThread == null) {
+            mSecond = 0;
+            isStop = false;
+            //Thread가 동작되는 동안 새로운 Thread를 만들지 못하기 위한 코드
+            mTimerThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (mSecond <= ONE_HOUR) {
+                        if (isStop) break; //루프 진행여부 flag
+                        Log.i(TAG, "mSecond" + mSecond);
+
+                        ++mSecond;
+                        if ((mSecond % 10) == 0)
+                            Toast.makeText(TimerService.this, "Alarm: " + mSecond, Toast.LENGTH_SHORT).show();
+
+                        try { Thread.sleep(1000); } catch (InterruptedException e) {  }
+                    } //end of while
+                    mTimerThread = null;
+                }
+            });
+            mTimerThread.start();
+        }
+        return START_STICKY; //메모리 부족으로 종료되었다가 가용 메모리가 확보되면
+        //현재 서비스를 다시 기동하라는 플래그
+    };
+```
+
+그러나 해당 코드는 죽는다.
+
+`오류가 되는부분 - `
+`Toast.makeText(TimerService.this, "Alarm: " + mSecond, Toast.LENGTH_SHORT).show();`
+
+`Toast`는 기본적으로 `View`이다 . 해당 `View`를 출력하는 `Thread`가 
+`WorkerThread`이기 때문에 정책위반으로 runtime예외가 발생한다.
+
+```java
+public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        Log.i(TAG, "onStartCommand()");
+
+
+        if(mTimerThread == null) {
+            mSecond = 0;
+            isStop = false;
+            //Thread가 동작되는 동안 새로운 Thread를 만들지 못하기 위한 코드
+            mTimerThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (mSecond <= ONE_HOUR) {
+                        if (isStop) break; //루프 진행여부 flag
+                        Log.i(TAG, "mSecond" + mSecond);
+
+                        ++mSecond;
+                        if ((mSecond % 10) == 0) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(TimerService.this, "Alarm: " + mSecond, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        try { Thread.sleep(1000); } catch (InterruptedException e) {  }
+                    } //end of while
+                    mTimerThread = null;
+                }
+            });
+            mTimerThread.start();
+        }
+        return START_STICKY; //메모리 부족으로 종료되었다가 가용 메모리가 확보되면
+        //현재 서비스를 다시 기동하라는 플래그
+    };
+```
+그러므로 `WorkerThread`에서 실행을 하되 `Handler`를 만들어 해당 코드에대한 수행을
+`MainActivity`에 이행함으로써 `UI Thread`에서 수행되게 만든다.
+
+위와 같은 방식으로 `Activity` 가 파괴되어도 `Service` 상에서 구동되어 있기 때문에 `Background` 에서 해당의 기능이 유지된다.
+
+위와 같은 `Service` 를 `Started Service` 라고 한다.
+
+Android 에서는 `Started Service` 를 조금 더 쉽게 구현할 수 있게 해주는
+`IntentService` 를 제공한다.
+
+`IntentService Create - `
+![](pic/IntentServiceCreate.png)
+
+---
+## Binder Service
+`IPC` 환경에서 `Component`와 `Component`를 연결하기 위한 매커니즘 이였다
+OpenBinder - > Android Binder
+
+CORBA - `RPC(Remote Protocal Call)` 로컬상에서 서로다른 프로세스 사이의 함수들을 사용 할 수 있게 해준다
+하드웨어를 제어하는 `Application`이 죽었을 때 대신할 수 있는 서비스를 생성하고 내부에 하드웨어 제어 메서드를 만든다.<br/>
+![](pic/ComponentBinderUseMethod.png)<br/>
+
+후에 다른 프로세스에서 해당 서비스의 하드웨어 제어 메서드만을 이용하여 
+다른 프로세스가 해당 하드웨어를 제어 할 수 있게된다.<br/>
+![](pic/LinuxKernelBinder.png)<br/>
+
+
+다른 프로세스 객체의 메서드를 `RPC Code`를 통한 Protocal Call의 정책을 
+이용하여 원격으로 하드웨어를 제어할 수 있게된다.<br/>
+![](pic/FullBinderLoader.png)
+
+해당의 기능을 사용하기위해서 Client와 Server가 동일한 interface를 사용해야한다.
+
+Android에서 `AIDL(Android Interface Definition Language)`을 통해 interfacef를 만들게 되면 Client객체와 Server객체를 만들게 된다.
+
+`Binding Service implements -`
+![](pic/CreateBinderDriver.png)

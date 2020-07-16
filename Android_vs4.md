@@ -183,3 +183,102 @@ public void onButtonClick(View view) {
 
 ---
 # Service
+
+Background에서 작업을 수행할 수 있는 Application 구성요소
+
+Timer예제를 통해 Background개념 잡기
+```java
+public void onButtonClick(View view) {
+    switch (view.getId()) {
+        case R.id.startTimerButton:
+            if(mTimerThread != null) //Timer가 동작중이라면
+                return;
+
+            mSecond = 0;
+            isStop = false;
+            mTimerThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //Looper.prepare();
+                    while(mSecond <= ONE_HOUR) {
+                        if(isStop) break;
+                        Log.i(TAG, "mSecond"+mSecond);
+
+                        ++mSecond;
+                        if((mSecond % 10) == 0) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "Alarm: " + mSecond, Toast.LENGTH_SHORT).show();
+                                    //1. MainActivity.this
+                                    //2
+                                }
+                            });
+                        }
+                        try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+                    }
+                    //Looper.loop();
+                }
+            });
+            mTimerThread.start();
+            break;
+        case R.id.stopTimerButton:
+            isStop = true;
+            break;
+    }
+```
+
+![](pic/Background_runOnUiToast.png)
+
+그러나 해당 Alarm을 끄기위해서 `App`에 재접속하여 STOPTIMER를 눌러도
+TIMER가 멈추지 않고 점입가경으로 STARTTIMER를 누르게되면 또 하나의 `Thread`가 생겨 구동된다.<br/>
+![](pic/PlayTwoThreadByOneApp.png)<br/>
+해당 `App`은 `Back버튼`을 눌러 `background`를 나가면 구동하고 있는 것처럼보이지만
+App은 파괴되어 기존의 상태정보를 불러오지 못하는 상태이다.<br/>
+![](pic/AfterThreadDestroyByBackButton.png)<br/>
+그러므로 우리는 App의 상태정보를 저장해두었다가 꺼내오는 `Bundle객체`를 사용한다.
+그러나 실제상용코드에서 `Bundle`을 쓰게되면 하나의 `Thread`에 대해 
+`Bundle SaveState`를 해주어야하기 떄문에 코드가 상당히 복잡해진다.
+
+그러므로 `App파괴`와 상관없이 `Background`에서 계속하여 
+실행 할 수 있게해야 하는데 이러한 기능을 제공하는 Android class가 `Servie`이다.
+
+---
+## Service Create
+`Service 생성 -`
+![](pic/ServiceCreateWindow.png)
+
+Android 내부에서 `Service`의 생성자를 이미 호출하기 때문에 
+`Service`의 생성자에서 작업을 수행하는것은 권장되지 않는다.
+
+```java
+public class TimerService extends Service {
+    public TimerSerivce(){
+        //생성자는 삭제
+    }
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+}
+```
+`Service`에서 `onBind()`도 실행하기때문에 자동으로 생성된다.
+
+---
+## Service Life Cycle
+
+`Service 도입 -`<br/>
+![](pic/ServiceLifeCycle.png)
+
+`Service` 최초 실행시 `onCreate()`메서드 호출 
+`Service`가 최초실행 후에 다시 해당 `Service`를 호출하게되면 `onCreate()`가 아닌
+`onStart()`메서드가 실행된다.
+
+![](pic/ServiceLifeCycle_1.png)
+
+---
+![](pic/ServiceExtends.png)
+
+`context`를 상속받고 있는 `Service`
+`Service` 또한 app을 구성하고 있는 요소이기 때문에 `context`를 가지고있다.

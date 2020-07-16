@@ -369,6 +369,9 @@ public int onStartCommand(Intent intent, int flags, int startId) {
 `WorkerThread`이기 때문에 정책위반으로 runtime예외가 발생한다.
 
 ```java
+public Handler mHandler = new Handler(Looper.getMainLooper());
+//MainActivity의 Looper를 받아온다.
+...
 public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         Log.i(TAG, "onStartCommand()");

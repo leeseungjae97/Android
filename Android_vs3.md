@@ -517,4 +517,3 @@ ArrayList<Point> mPoints = new ArrayList<>();
 세로모드에서 가로모드로 전환해도 세로모드의 onDraw정보를 다시 불러오는 모습
 ![](pic/SaveViewWhenRotate.png)
 ![](pic/WhenRotateActivityCycle.png)
-branch

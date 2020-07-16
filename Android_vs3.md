@@ -11,6 +11,8 @@
 >출처 https://developer.android.com/reference/com/google/android/material/snackbar/Snackbar
 
 
+`Gradle`
+
 ![](pic/Mertial.png)
 ![](pic/MaterialDownload.png)
 
@@ -30,9 +32,8 @@ dependencies {
 ```
 `Toast`는 `View`와 상관없이 제일 상위에 뜨기 때문에 `context`만 있으면 되지만
 `Snackbar`는 `rootView`가 필요하다.
-
 `LinearLayout`에 대한 `onButtonClick`의 `View`
-` - Snackbar.make(view, "hello World", Snackbar.LENGTH_LONG).show();`
+` - Snackbar.make(view, "hello World", Snackbar.LENGTH_LONG).show()`
 
 `LinearLayout`에 직접적으로 넣은 코드
 ` - Snackbar.make(layout, "hello World", Snackbar.LENGTH_LONG).show();`
@@ -54,16 +55,16 @@ public void onButtonClick(View view){
 ![](pic/SnackbarPopup.png)
 
 `Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFINITE).show();`
-`Snackbar.LENGTH_INDEFINITE`는 이벤트 처리를 위한 옵션이다
+Snackbar.LENGTH_INDEFINITE는 이벤트 처리를 위한 옵션이다
 ```java
 Snackbar snackbar = Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFINITE);
-snackbar.setAction("OK", new View.OnClickListener() {
-    @Override
-    public void onClick(View view) {
-        Log.i(TAG, "Snackbar Test");
-    }
-});
-snackbar.show();
+                snackbar.setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.i(TAG, "Snackbar Test");
+                    }
+                });
+                snackbar.show();
 ```
 >OK를 누르면 Snackbar가 내려간다.
 ![](pic/SnackBarOKbutton.png)
@@ -207,7 +208,6 @@ builder.setNeutralButton("취소", new DialogInterface.OnClickListener() {
 ---
 -주의!
 ![](pic/MustCreateAboutView.png)
-<br/> 미생성 시 오류
 
 ---
 
@@ -252,8 +252,8 @@ case R.id.alertDialog_button:
 ![](pic/ActivityChangeSeqence.png)<br/>
 어플 사용 중 다른 어플의 기능을 구동할 때 기존어플에서 새로이 어플을 실행했다.
 
-하지만 해당 어플의 `Activity`만 가져와 실행한다면 어플이 따로 실행될 일이 없다.
-아래 코드는 `Activity`를 따로 생성하여 `MainActivity` 위에서 실행되게 하였다.
+하지만 해당 어플의 `Activity`만 생성하여 실행한다면 어플이 따로 실행될 일이 없다.
+
 `Second Activity Create -`
 ![](pic/NewActivity.png)
 ```xml
@@ -278,15 +278,15 @@ public void onButtonClick(View view){
     startActivity(intent);
 }
 ```
----
-## Intent
+
+- Intent
 ![](pic/IntentInfo.png)
 ![](pic/IntentWithActInfo.png)
 
 ![](pic/MainActResult.png)
 ![](pic/OnSecondActResult.png)
 
-`intent`는 내부 `Hashmap`구조의 `Extra`에 데이터를 저장한다.
+`intent`는 내부 `Extra`의 `Hashmap`에 데이터를 저장한다.
 `intent`를 통한 `ActivityResult` 받기
 
 
@@ -307,14 +307,12 @@ public void onButtonClick(View view){
     }
 }
 ```
-<br/>
-
 `onSecondActivity -`
 ```java
 protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_second);
-
+    
     Intent intent = getIntent();
     String msg = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
     //MainActivity에서 공개키로 만들어진 데이터 가져오기
@@ -401,7 +399,7 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
 # Activity LifeCycle
 ![](pic/ActivityLifeCycle.png)
 기본적으로 android는 activity를 종료하지 않지만
-`onPause()`나 `onStop()`인 상태의 `activity`에 한해서
+`onPause()`나 `onStop()`인 상태의 `activity`에 한해서 
 android 시스템의 리소스가 부족할 때 해당 상태의 `activity`가 종료된다
 ```java
 @Override
@@ -437,7 +435,7 @@ android 시스템의 리소스가 부족할 때 해당 상태의 `activity`가 �
 ```
 ![](pic/CloseActivityOnAndroid.png)
 
-기능을 수행하는 View 생성
+drawLine의 View 생성
 ```java
 class MyView extends View {
         Paint mPaint = new Paint();
@@ -487,9 +485,6 @@ class MyView extends View {
         }
     }
 ```
-시스템에서 Rotate를 켜주고 화면모드를 전환하면 내부 내용이 초기화된다.
-
-
 ---
 ## InstanceState
 Screen Rotation 시 View를 Stop하고 Destory를 하기 때문에
@@ -502,9 +497,7 @@ Bundle을 이용하여 상태정보를 저장<br/>
 ArrayList<Point> mPoints = new ArrayList<>();
 ```
 
-
 ```java
-//저장
 @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         Log.i(TAG, "onSaveInstanceState");
@@ -512,14 +505,14 @@ ArrayList<Point> mPoints = new ArrayList<>();
         super.onSaveInstanceState(outState);
     }
 
-//복원
-@Override
-protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-    //해당 argument는 절대 null이 될 수 없다.
-    ArrayList<Point> points = (ArrayList<Point>) savedInstanceState.getSerializable("mPoints");
-    mPoints = points;
-    super.onRestoreInstanceState(savedInstanceState);
-}
+    //복원
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        //해당 argument는 절대 null이 될 수 없다.
+        ArrayList<Point> points = (ArrayList<Point>) savedInstanceState.getSerializable("mPoints");
+        mPoints = points;
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 ```
 세로모드에서 가로모드로 전환해도 세로모드의 onDraw정보를 다시 불러오는 모습
 ![](pic/SaveViewWhenRotate.png)

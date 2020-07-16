@@ -284,8 +284,8 @@ public class TimerService extends Service {
 `Service` 또한 app을 구성하고 있는 요소이기 때문에 `context`를 가지고있다.
 
 ---
-## Started Service
-
+### Start Service
+`onCreate()`, `onStartCommand()`, `onDestroy` 는 반드시 Override되어야한다.
 
 `Service` 위에서 Thread.sleep을 이용한 코드
 ```java
@@ -410,20 +410,20 @@ public int onStartCommand(Intent intent, int flags, int startId) {
 
 위와 같은 방식으로 `Activity` 가 파괴되어도 `Service` 상에서 구동되어 있기 때문에 `Background` 에서 해당의 기능이 유지된다.
 
-위와 같은 `Service` 를 `Started Service` 라고 한다.
+위와 같은 `Service` 를 `Start Service` 라고 한다.
 
-Android 에서는 `Started Service` 를 조금 더 쉽게 구현할 수 있게 해주는
+Android 에서는 `Start Service` 를 조금 더 쉽게 구현할 수 있게 해주는
 `IntentService` 를 제공한다.
 
 `IntentService Create - `
 ![](pic/IntentServiceCreate.png)
 
 ---
-## Binder Service
-`IPC` 환경에서 `Component`와 `Component`를 연결하기 위한 매커니즘 이였다
-OpenBinder - > Android Binder
+### Bind Service
+`IPC` 환경에서 `Component`와 `Component`를 연결하기 위한 매커니즘이였다.
+`OpenBinder` -> `Android Binder`
 
-CORBA - `RPC(Remote Protocal Call)` 로컬상에서 서로다른 프로세스 사이의 함수들을 사용 할 수 있게 해준다
+`RPC(Remote Procedure Call)` 원격에 있는 서로다른 프로세스 사이의 함수들을 사용 할 수 있게 해준다.
 하드웨어를 제어하는 `Application`이 죽었을 때 대신할 수 있는 서비스를 생성하고 내부에 하드웨어 제어 메서드를 만든다.<br/>
 ![](pic/ComponentBinderUseMethod.png)<br/>
 
@@ -432,7 +432,7 @@ CORBA - `RPC(Remote Protocal Call)` 로컬상에서 서로다른 프로세스 �
 ![](pic/LinuxKernelBinder.png)<br/>
 
 
-다른 프로세스 객체의 메서드를 `RPC Code`를 통한 Protocal Call의 정책을 
+다른 프로세스 객체의 메서드를 `RPC Code`를 통한 Procedure Call의 정책을 
 이용하여 원격으로 하드웨어를 제어할 수 있게된다.<br/>
 ![](pic/FullBinderLoader.png)
 
@@ -440,5 +440,244 @@ CORBA - `RPC(Remote Protocal Call)` 로컬상에서 서로다른 프로세스 �
 
 Android에서 `AIDL(Android Interface Definition Language)`을 통해 interfacef를 만들게 되면 Client객체와 Server객체를 만들게 된다.
 
-`Binding Service implements -`
+`Bind Service Interface implements -`
 ![](pic/CreateBinderDriver.png)
+
+![](pic/AIDLCreate.png)
+
+![](pic/AIDL_Build.png)
+
+Proxy : 원격에 존재하는 서비스 객체의 함수 또는 메서드를 대신하여 호출하는 객체(대리자)
+Stub : `Proxy`에 의해 요청된 메서드 또는 함수 호출을 실제 구현된 객체에게 전송하는 역할
+
+서비스 객체를 구현하는 사람은 Stub class를 상속하여야한다.
+
+`Bind Service - Server` 는 
+`onCreate()`, `onBind` `onUnbind`, `onDestroy`가 Override 되어야한다.
+```java
+ public void onCreate() {
+        super.onCreate();
+        Log.i(TAG, "onCreate()");
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy()");
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG, "onUnbind()");
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.i(TAG, "onBind()");
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+```
+Client와 묶을 interface의 Stub class 구현.
+`Server - `
+```java
+private ICalcService.Stub mBinder = new ICalcService.Stub() {
+        @Override
+        public long doSquare(int number) throws RemoteException {
+            return number * number;
+        }
+
+        @Override
+        public int doDouble(int number) throws RemoteException {
+            return number + number;
+        }
+    };
+```
+`interface - ICalcService`
+```java
+public interface ICalcService extends android.os.IInterface
+{
+  /** Default implementation for ICalcService. */
+  public static class Default implements com.example.servicetest2.ICalcService
+  {
+      ...
+
+public long doSquare(int number) throws android.os.RemoteException;
+public int doDouble(int number) throws android.os.RemoteException;
+```
+`MainActivity - Client`
+```java
+private ICalcService mCalcService;
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        //서비스가 시작되고 onBind가 호출되면 아래의 메서드가 호출되면서
+        //서비스 객체에 대한 프록시가 IBinder에 반환됨
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mCalcService = ICalcService.Stub.asInterface(iBinder);
+            //사용자의 Interface에 맞게 iBinder를 바꿔주는 함수.
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mCalcService = null;
+            //Unbind는 Service가 끊어진것이므로 null로 처리하여 없앰.
+        }
+    };
+
+    ...
+
+    switch(view.getId()) {
+        case R.id.doDoubleButton: {
+            int result = mCalcService.doDouble(number);
+            mResultTextView.setText(result + "");
+            break;
+        }
+        case R.id.doSquareButton: {
+            long result = mCalcService.doSquare(number);
+            mResultTextView.setText(result + "");
+            break;
+        }
+    }
+```
+
+서비스 객체를 구현하는 개발자는 반드시 IBinder interface를 구현해야한다.
+BinderDriver는 IBinder 타입만 등록가능
+
+---
+#### Stub
+
+`IBinder - `
+```java
+public interface IBinder {
+                    //RPC code
+    boolean transact(int var1, @NonNull Parcel var2, @Nullable Parcel var3, int var4) throws RemoteException;
+}
+```
+`Binder - `
+```java
+public class Binder implements IBinder {
+                                //RPC code
+    protected boolean onTransact(int code, @NonNull Parcel data, @Nullable Parcel reply, int flags) throws RemoteException {
+        throw new RuntimeException("Stub!");
+    }
+}
+```
+`Stub - `
+```java
+public static abstract class Stub extends android.os.Binder implements com.example.servicetest2.ICalcService{
+    ...
+                                      //RPC code
+    @Override public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
+
+        ...
+
+         case TRANSACTION_doSquare:
+        {
+          data.enforceInterface(descriptor);
+          int _arg0;
+          _arg0 = data.readInt();
+          long _result = this.doSquare(_arg0);
+          //this가 올 수 있는 이유 Stub이 ICalcService를 구현하는 구현클래스 이므로.
+          reply.writeNoException();
+          reply.writeLong(_result);
+          return true;
+        }
+        case TRANSACTION_doDouble:
+        {
+          data.enforceInterface(descriptor);
+          int _arg0;
+          _arg0 = data.readInt();
+          int _result = this.doDouble(_arg0);
+          reply.writeNoException();
+          reply.writeInt(_result);
+          return true;
+        }
+    }
+}
+```
+`CalcService`
+```java
+public class CalcService extends Service {
+    private ICalcService.Stub mBinder = new ICalcService.Stub() {
+        @Override
+        public long doSquare(int number) throws RemoteException {
+            return number * number;
+        }
+
+        @Override
+        public int doDouble(int number) throws RemoteException {
+            return number + number;
+        }
+    };
+```
+
+#### Proxy
+```java
+public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mCalcService = ICalcService.Stub.asInterface(iBinder);
+            //iBinder를 포함하고 있는 Proxy 호출
+}
+```
+```java
+private android.os.IBinder mRemote;
+@Override public long doSquare(int number) throws android.os.RemoteException
+@Override public int doDouble(int number) throws android.os.RemoteException
+```
+Proxy가 Kernel로 RPC code 전송/저장<br/>
+![](pic/BindServiceProcedure.png)
+
+빨간□로 묶은 부분이 사용자 입력 부분이다.
+
+---
+### Service 정리
+Start Service : 사용자에게 하여금 Service를 사용하고 
+Bind Service : 
+
+---
+# Preference
+서로다른 Activity가 사용가능.
+
+`MainActivity - `
+```java
+protected void onPause() {
+        super.onPause();
+        //전역타입으로 정적메서드 제공
+        SharedPreferences pref = getSharedPreferences("mypref", 0);
+
+        SharedPreferences.Editor editor = pref.edit();
+
+        String name = mNameEditText.getText().toString();
+        String studentId = mStudentIdEditText.getText().toString();
+
+        editor.putString("name", name);
+        editor.putString("studentId", studentId);
+
+        editor.commit();//동기화 Thread Safetying
+    }
+```
+```java
+protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mNameEditText = findViewById(R.id.nameEditText);
+        mStudentIdEditText = findViewById(R.id.studentIdExitText);
+
+        //해당하는 Preference 읽어오기.
+        SharedPreferences pref = getSharedPreferences("mypref",MODE_PRIVATE);
+        if(pref !=null) {
+            if (pref.contains("name"))
+                mNameEditText.setText(pref.getString("name", ""));
+            if (pref.contains("studentId"))
+                mStudentIdEditText.setText(pref.getString("studentId", ""));
+        }
+    }
+```
+![](pic/preference.png)
+
+Back button으로 나갔다와도 사용자가 작성한 내용이 그대로 남아있다.
+Bundle과 비교하여 한계가 있다.
+
+![](pic/preference_editor.png)<br/>
+저장할 수 있는 타입이 몇 안됨.

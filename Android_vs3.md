@@ -2,19 +2,15 @@
 
 ## Toast Message
 `Toast.makeText(this, "hellow World", Toast.LENGTH_LONG).show();`
-![](pic/ToastView.png)
-
+![](pic/ToastViewer.png)
 
 ---
 ## SnackBar Message
 ![](pic/SnackBarInfo.png)
->출처 https://developer.android.com/reference/com/google/android/material/snackbar/Snackbar
 
 
 `Gradle`
-
-![](pic/Mertial.png)
-![](pic/MaterialDownload.png)
+![](pic/MaterialDown.png)
 
 
 `추가된 Meterial`
@@ -52,7 +48,8 @@ public void onButtonClick(View view){
         };
     }
 ```
-![](pic/SnackbarPopup.png)
+![](pic/normalSnackbar.png)
+
 
 `Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFINITE).show();`
 Snackbar.LENGTH_INDEFINITE는 이벤트 처리를 위한 옵션이다
@@ -67,7 +64,7 @@ Snackbar snackbar = Snackbar.make(layout, "hello World", Snackbar.LENGTH_INDEFIN
                 snackbar.show();
 ```
 >OK를 누르면 Snackbar가 내려간다.
-![](pic/SnackBarOKbutton.png)
+![](pic/SnackbarOKButton.png)
 <br/>
 
 
@@ -109,9 +106,26 @@ case R.id.dialog_button:
 ---
 내부 `Text`에 대한 UI 설정
 `Layout` 생성
-![](pic/DialogTextUILayout.png)
-
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_layout"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/dialog_imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/dialog_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:textColor="#FF000000"/>
+</LinearLayout>
 ```
 ```java
 Dialog dialog = new Dialog(this);
@@ -157,7 +171,7 @@ case R.id.dialog_button:
 
 ### Dialog Builder
 Android가 제공하는 Dialog API를 사용하기 위한 Builder 생성<br/>
-![](pic/DialogBuilderInfo.png)
+![](pic/AlertDialogBuilderInfo.png)
 ```java
 case R.id.alertDialog_button:
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -203,12 +217,6 @@ builder.setNeutralButton("취소", new DialogInterface.OnClickListener() {
 ```
 ![](pic/DialogButtonCreate.png)
 
-![](pic/DialogNegativeButton.png)
-
----
--주의!
-![](pic/MustCreateAboutView.png)
-
 ---
 
 전체코드
@@ -249,10 +257,9 @@ case R.id.alertDialog_button:
 ---
 
 # Activity Communication
-![](pic/ActivityChangeSeqence.png)<br/>
 어플 사용 중 다른 어플의 기능을 구동할 때 기존어플에서 새로이 어플을 실행했다.
 
-하지만 해당 어플의 `Activity`만 생성하여 실행한다면 어플이 따로 실행될 일이 없다.
+하지만 해당 어플의 `Activity` 만 생성하여 실행한다면 어플이 따로 실행될 일이 없다.
 
 `Second Activity Create -`
 ![](pic/NewActivity.png)
@@ -279,13 +286,13 @@ public void onButtonClick(View view){
 }
 ```
 
-- Intent
+- Intent<br/>
+![](pic/intentRole.png)
 ![](pic/IntentInfo.png)
-![](pic/IntentWithActInfo.png)
+
 
 ![](pic/MainActResult.png)
-![](pic/OnSecondActResult.png)
-
+![](pic/OnSecondActResult.png)<br/>
 `intent`는 내부 `Extra`의 `Hashmap`에 데이터를 저장한다.
 `intent`를 통한 `ActivityResult` 받기
 

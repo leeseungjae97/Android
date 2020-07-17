@@ -384,3 +384,223 @@ public class MemoDbHelper extends SQLiteOpenHelper {
     }
 }
 ```
+
+```java
+ public void insertMemo(String content) {
+        if(content == null || content.isEmpty()) {
+            return;
+        }
+
+        //mDatabase.execQuery(...);
+        //테이블에 삽입할 데이터를 준비
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MemoContract.MemoEntry.COLUMN_NAME_CONTENT, content);
+        contentValues.put(MemoContract.MemoEntry.COLUMN_NAME_DATETIME, new Date().getTime());
+
+        //Database에 무언가를 쓰기위한 전용객체.
+        SQLiteDatabase sqLiteDatabase = MemoDbHelper.getInstance(this).getWritableDatabase();
+
+        //data 밀어넣기
+        long result = sqLiteDatabase.insert(MemoContract.MemoEntry.TABLE_NAME, null, contentValues);
+
+        if(result == -1 )  {//오류발생
+            Toast.makeText(this, "메모 저장 오류", Toast.LENGTH_SHORT).show();
+        }
+        else
+            Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+```
+```java
+public class MainActivity extends AppCompatActivity {
+    private final static String TAG= "MainActivity";
+
+    private EditText mInputEdit;
+    private ListView mListView;
+    private MemoAdapter mMemoAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mListView = findViewById(R.id.listView);
+        mInputEdit = findViewById(R.id.inputEditText);
+        //mMemoAdapter = new MemoAdapter(this, getMemoCursor());
+        mInputEdit.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                if(keyCode == KeyEvent.KEYCODE_ENTER) {
+                    String content = mInputEdit.getText().toString();
+                    if(!content.isEmpty()) {
+                        insertMemo(content);
+                        mInputEdit.setText(null);
+                        mListView.setAdapter(new MemoAdapter(MainActivity.this, getMemoCursor()));
+                        //메모를 삽입
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        //ListView에 대한 Adapter를 SQLite에서 읽어온 데이터 mMemo의 Adapter를 사용한 구문.
+
+        //mListView.setAdapter(mMemoAdapter);
+    }
+
+    public void insertMemo(String content) {
+        if(content == null || content.isEmpty()) {
+            return;
+        }
+
+        //mDatabase.execQuery(...);
+        //테이블에 삽입할 데이터를 준비
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MemoContract.MemoEntry.COLUMN_NAME_CONTENT, content);
+        contentValues.put(MemoContract.MemoEntry.COLUMN_NAME_DATETIME, new Date().getTime());
+
+        //Database에 무언가를 쓰기위한 전용객체.
+        SQLiteDatabase sqLiteDatabase = MemoDbHelper.getInstance(this).getWritableDatabase();
+
+        //data 밀어넣기
+        long result = sqLiteDatabase.insert(MemoContract.MemoEntry.TABLE_NAME, null, contentValues);
+
+        if(result == -1 )  {//오류발생
+            Toast.makeText(this, "메모 저장 오류", Toast.LENGTH_SHORT).show();
+        }
+        else
+            Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private Cursor getMemoCursor() {
+        MemoDbHelper memoDbHelper = MemoDbHelper.getInstance(this);
+        SQLiteDatabase sqLiteDatabase = memoDbHelper.getReadableDatabase();
+        return sqLiteDatabase.query(MemoContract.MemoEntry.TABLE_NAME,
+                null, null, null, null, null, null);
+    }
+
+    private static class MemoAdapter extends CursorAdapter{
+        //부모 생성자를 호출해야 한다.
+        public MemoAdapter(Context context, Cursor cursor){
+            super(context, cursor, false);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+            //rootView가 아니므로 false
+            return LayoutInflater.from(context).inflate(R.layout.item, viewGroup, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            //content로 index를 찾아 String 반환
+            String content = cursor.getString(cursor.getColumnIndexOrThrow(MemoContract.MemoEntry.COLUMN_NAME_CONTENT));
+            //datetime으로 index를 찾아 long 반환
+            long time = cursor.getLong(cursor.getColumnIndexOrThrow(MemoContract.MemoEntry.COLUMN_NAME_DATETIME));
+            //time을 찍을 format 설정
+            String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
+            TextView contentText = view.findViewById(R.id.contentTextViewItem);
+            contentText.setText(content);
+
+            TextView datetimeText = view.findViewById(R.id.datetimeTextViewItem);
+            datetimeText.setText(dateTime);
+
+        }
+    }
+}
+```
+---
+# BroadCast
+![](pic/BoardCastInfo.png)
+
+![](pic/intentBoardCastInfo.png)
+
+```java
+BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ++count;
+
+            String action = intent.getAction();
+            if(action.equals(Intent.ACTION_BATTERY_CHANGED)) {
+                displayBatteryState(intent);
+            }
+
+            switch (action) {
+                case Intent.ACTION_BATTERY_LOW:
+                    Toast.makeText(MainActivity.this,"배터리가 부족합니다", Toast.LENGTH_LONG).show();
+                    break;
+                case Intent.ACTION_BATTERY_OKAY:
+                    Toast.makeText(MainActivity.this,"배터리 양호", Toast.LENGTH_LONG).show();
+                    break;
+                case Intent.ACTION_POWER_CONNECTED:
+                    Toast.makeText(MainActivity.this,"전원 연결됨", Toast.LENGTH_LONG).show();
+                    break;
+                case Intent.ACTION_POWER_DISCONNECTED:
+                    Toast.makeText(MainActivity.this,"전원이 분리됨", Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+    };
+```
+---
+# 암시적 intent
+```java
+Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:"+phoneNumber)); //URI 형식의 data를 받는다.
+                                                        //parse할때 공백이 없도록 하자
+        startActivity(intent);
+```
+
+---
+## permission
+위의 CALL과 같은 ACTION은 사용자의 허락을 요구한다.
+```java
+public void onButtonClick(View view) {
+        String phoneNumber = mPhoneNumberEdit.getText().toString();
+        if(phoneNumber.isEmpty()) {
+            return;
+        }
+        //사용자로부터 권한을 얻은 다음 실행하여야 한다.
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
+                == PackageManager.PERMISSION_GRANTED) {//호환성체크
+
+            //체크가 되었다면 승낙
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            intent.setData(Uri.parse("tel:" + phoneNumber)); //URI 형식의 data를 받는다.
+            //parse할때 공백이 없도록 하자
+            startActivity(intent);
+        }
+        //사용자가 해당 권한을 승인하지 않은 경우, 권한 승인 요청을 해야한다.
+        try{
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
+        }
+        catch (SecurityException e) {e.printStackTrace();}
+    }
+
+
+    //사용자의 승낙 여부 확인.
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CALL_PHONE:
+                for (int i = 0; i < permissions.length ; i++) {
+                    String permission = permissions[i];
+                    int grantResult = grantResults[i];
+                    if(permission.equals(Manifest.permission.CALL_PHONE)) {
+                        String phoneNumber = mPhoneNumberEdit.getText().toString();
+
+                        Uri uri = Uri.parse("tel:"+phoneNumber);
+                        startActivity(new Intent(Intent.ACTION_CALL, uri));
+                    }
+                    else {
+                        return;
+                    }
+                }
+                break;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+```

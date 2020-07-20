@@ -604,3 +604,5 @@ public void onButtonClick(View view) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 ```
+![](pic/permissionExampleCallPhone.png)
+![](pic/CallResult.png)

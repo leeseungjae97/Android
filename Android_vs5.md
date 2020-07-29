@@ -606,3 +606,76 @@ public void onButtonClick(View view) {
 ```
 ![](pic/permissionExampleCallPhone.png)
 ![](pic/CallResult.png)
+
+final Test
+```java
+package com.example.testanswer;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.Random;
+
+public class MainActivity extends AppCompatActivity {
+    private TextView textView1;
+    private TextView textView2;
+
+
+    private final static int TRACK_DIS = 100;
+
+    private int comDis;
+    private int usrDis;
+
+    private boolean startGame =false;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView1 = findViewById(R.id.computer);
+        textView2 = findViewById(R.id.user);
+    }
+
+    public void onButtonClick(View view) {
+        if(startGame == false) {
+            Button button = (Button) view;
+            button.setText("HIT! ME");
+            startGame = true;
+
+            new Thread(new Runnable() {
+                Random random = new Random();
+
+                @Override
+                public void run() {
+                    while(true) {
+                        if(comDis > TRACK_DIS || usrDis > TRACK_DIS)
+                            break;
+
+                        comDis += random.nextInt(11);
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {}
+
+                        //온전히 UI 적인것만 runOnUiThread에 주자
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView1.setText(String.format("COM : %dm", comDis));
+                            }
+                        });
+                    }
+                }
+            }).start();
+        }
+        ++usrDis;
+        textView2.setText(String.format("USR : %dm", usrDis));
+    }
+}
+```
